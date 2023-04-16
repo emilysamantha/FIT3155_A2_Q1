@@ -42,7 +42,7 @@ class Node:
         self.start = start      # Start point of edge connecting the node to its parent
         self.end = end          # End point of edge connecting the node to its parent
         self.suffix_index = suffix_index        # Starting point of suffix ending at the node
-        self.children = [None] * 126
+        self.children = [None] * 127
         self.suffix_link = None
 
     def is_root(self):
