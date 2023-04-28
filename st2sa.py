@@ -39,11 +39,12 @@ class Node:
     global_end = -1
 
     def __init__(self, start, end, suffix_index,):
-        self.start = start      # Start point of edge connecting the node to its parent
-        self.end = end          # End point of edge connecting the node to its parent
+        self.start = start                      # Start point of edge connecting the node to its parent
+        self.end = end                          # End point of edge connecting the node to its parent
         self.suffix_index = suffix_index        # Starting point of suffix ending at the node
         self.children = [None] * 127
         self.suffix_link = None
+        self.visited = False
 
     def is_root(self):
         return self.end == -1
@@ -65,10 +66,7 @@ def inc_global_end():
     Node.global_end += 1
 
 
-def ukkonen_suffix_tree(txt: str):
-    # Append special end character $
-    txt += "$"
-
+def ukkonen_suffix_tree(txt: str) -> Node:
     # Initialize root node
     root = Node(-1, -1, -1)
     root.suffix_link = root
@@ -150,7 +148,7 @@ def ukkonen_suffix_tree(txt: str):
                 active_node.children[active_edge] = new_node
 
                 # Hang new leaf off the new internal node
-                new_node.children[ord(txt[phase])] = Node(phase, None, phase)
+                new_node.children[ord(txt[phase])] = Node(phase, None, j)
 
                 # Update remaining edge's start point
                 next_node.start += remainder
@@ -188,9 +186,33 @@ def ukkonen_suffix_tree(txt: str):
             # Increment j
             j += 1
 
+    return root
+
+
+def get_suffix_array(root: Node):
+    suffix_array = []
+
+    def dfs(node: Node):
+        if node.is_leaf():
+            suffix_array.append(node.suffix_index)
+
+        for child in node.children:
+            if child is not None and not child.visited:
+                child.visited = True
+                dfs(child)
+
+    dfs(root)
+
+    return suffix_array
+
 
 if __name__ == '__main__':
     _, filename = sys.argv
     string = read_file(filename)
 
-    ukkonen_suffix_tree(string)
+    # Append special end character $
+    string += "$"
+
+    root = ukkonen_suffix_tree(string)
+
+    print(get_suffix_array(root))

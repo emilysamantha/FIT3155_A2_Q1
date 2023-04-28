@@ -1,0 +1,154 @@
+        for j in range(last_j+1, phase+1):
+            # If active point is at a node
+            if remainder == 0:
+                active_letter = j
+                # Check if there is an edge going out from active_node for the active_edge
+                edge_found = check_edge(str, active_node, active_letter)
+
+                if not edge_found:
+                    # Rule 2 Alternate
+                    active_node.children.append(Edge(j, j))
+                    last_j = j
+                else:
+                    # Rule 3
+                    # No walk down needed
+                    remainder += 1
+                    break
+            # If active point is in the middle of an edge
+            else:
+                # Check if the active_character matches the next character
+                letter_found = check_letter(str, active_edge, remainder, active_letter)
+
+                if letter_found:
+                    # Rule 3
+                    remainder += 1
+                    break
+                else:
+                    # Rule 2 Regular
+                    # Create new node in the middle of the Edge
+                    active_edge.end_node = Node([Edge(active_edge.label, active_edge.start + remainder)])
+                    # Hang a new leaf in the new Node
+                    active_edge.end_node.children.append(Edge(active_letter + remainder, active_letter + remainder))
+                    # Update current edge's end
+                    active_edge.end = active_edge.start + remainder - 1
+                    last_j = j
+                    # Add the new node to pending (to resolve suffix link in next extension)
+                    pending = active_edge.end_node
+                    # If active_node is root and remainder is greater than 0
+                    if active_node == root and remainder > 0:
+                        remainder -= 1
+                        active_letter = last_j + 1
+                        active_edge = check_edge(str, active_node, active_letter)
+                    # Else if active_node is not root
+                    elif active_node != root:
+                        # Follow the suffix link
+                        pass
+
+
+
+
+
+
+
+
+
+
+class Node:
+    def __init__(self, suffix_index, start, children=[]):
+        self.children = children
+        self.suffix_link = None
+        self.start = start
+        self.end = None
+        self.suffix_index = suffix_index
+
+    def is_root(self):
+        return self.end == -1
+
+    def is_leaf(self):
+        return self.suffix_index > -1
+
+
+class Edge:
+    global_end = -1
+
+    def __init__(self, label, start, end=None):
+        self.label = label
+        self.start = start
+        self.end = end
+        self.end_node = None
+
+    def is_leaf(self):
+        return self.end_node is None
+
+    def get_edge_length(self):
+        return self.get_end() - self.start + 1
+
+    def get_end(self):
+        if self.is_leaf():
+            return Edge.global_end
+        else:
+            return self.end
+
+
+def inc_global_end():
+    Edge.global_end += 1
+
+
+def ukkonen_suffix_tree(str):
+    str += "$"
+
+    root = Node(-1, -1)
+    active_node = root
+
+    # Phase 1: Rule 2 Alternate
+    inc_global_end()
+    active_node.children.append(Edge(0, 0))
+    last_j = 0
+    active_edge = active_node.children[0]
+    active_letter = None
+    remainder = 0
+    pending = None
+
+    for phase in range(1, len(str)):
+        # Rule 1
+        inc_global_end()
+
+        for j in range (last_j+1, phase+1):
+            if remainder == 0:
+                active_letter = j
+
+            # Check if there is an edge going out from active_node for the active_edge
+            if remainder == 0:
+                edge_found = check_edge(str, active_node, active_letter)
+            # Check next letters
+            else:
+                k = j
+                while k < phase:
+                    edge_found = check_edge(str, active_node, active_letter)
+
+            if not edge_found:
+                # Rule 2 Alternate
+                active_node.children.append(Edge(j, j))
+                last_j = j
+            else:
+                # Rule 3
+                # No walk down needed
+                remainder += 1
+                break
+
+
+def check_edge(str, node, index):
+    if node.children is None:
+        return False
+
+    for edge in node.children:
+        if str[index] == str[edge.start]:
+            return edge
+
+    return False
+
+
+def check_letter(str, edge, remainder, index):
+    return str[index] == str[edge.start + remainder]
+
+
