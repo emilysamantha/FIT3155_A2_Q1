@@ -21,18 +21,22 @@ import sys
 
 
 def write_file(filename: str, results: list):
+    """
+    Function to write the results to a file, will write each element of the list in a single line
+    :param filename: file name we want to write the results to
+    :param results: the list we want to write into the file
+    :return: nothing
+    """
     with open(filename, "w") as f:
         for result in results:
-            f.write(str(result) + "\n")
+            f.write(str(result + 1) + "\n")
 
 
 def read_file(file_path: str) -> str:
     """
     Function to read a file and return the first line
-    :Input:
-        file_path: the filepath we want to read the first line of
-    :Output:
-        The first line of the file
+    :param file_path: the filepath we want to read the first line of
+    :return: the first line of the file
     """
     with open(file_path, 'r') as f:
         line = f.readline()
@@ -41,25 +45,25 @@ def read_file(file_path: str) -> str:
 
 
 class Node:
+    """
+    Node class for Ukkonen's suffix tree
+    """
     global_end = -1
 
     def __init__(self, start, end, suffix_index,):
         self.start = start                      # Start point of edge connecting the node to its parent
         self.end = end                          # End point of edge connecting the node to its parent
         self.suffix_index = suffix_index        # Starting point of suffix ending at the node
-        self.children = [None] * 127
-        self.suffix_link = None
-        self.visited = False
-
-    def is_root(self):
-        return self.end == -1
+        self.children = [None] * 127            # Children nodes connected to the node
+        self.suffix_link = None                 # Suffix link of the node
+        self.visited = False                    # For DFS traversal of the suffix tree when obtaining suffix array
 
     def is_leaf(self):
-        return self.end is None
+        return self.end is None                 # Node is a leaf if the end is set to None
 
     def get_end(self):
-        if self.end is None:
-            return Node.global_end
+        if self.is_leaf():
+            return Node.global_end              # If the node is a leaf, return the tree's global_end
         else:
             return self.end
 
@@ -72,6 +76,14 @@ def inc_global_end():
 
 
 def ukkonen_suffix_tree(txt: str) -> Node:
+    """
+    Function to generate a string's Ukkonen's suffix tree
+    :param txt: the string we want to generate the suffix tree of
+    :return: the tree's root node
+    """
+    # Append special end character $
+    txt += "$"
+
     # Initialize root node
     root = Node(-1, -1, -1)
     root.suffix_link = root
@@ -197,7 +209,12 @@ def ukkonen_suffix_tree(txt: str) -> Node:
     return root
 
 
-def get_suffix_array(root: Node):
+def get_suffix_array(root: Node) -> list:
+    """
+    Function to get a string's suffix array from its suffix tree
+    :param root: the root node of the string's suffix tree
+    :return: the string's suffix array
+    """
     suffix_array = []
 
     def dfs(node: Node):
@@ -217,9 +234,6 @@ def get_suffix_array(root: Node):
 if __name__ == '__main__':
     _, filename = sys.argv
     string = read_file(filename)
-
-    # Append special end character $
-    string += "$"
 
     root = ukkonen_suffix_tree(string)
 
