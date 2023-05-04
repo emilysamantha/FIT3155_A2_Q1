@@ -131,7 +131,7 @@ def ukkonen_suffix_tree(txt: str) -> Node:
 
                 # Check if walk down is needed
                 # If remainder is greater or equal to the edge length of the next node
-                if remainder > next_node.get_edge_length():
+                if remainder >= next_node.get_edge_length():
                     # Walk down
                     # Set active_edge as the next character in the path after skip/count trick
                     skipped_edge_length += next_node.get_edge_length()
