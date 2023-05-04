@@ -20,10 +20,15 @@ ID: 32558945
 import sys
 
 
+def write_file(filename: str, results: list):
+    with open(filename, "w") as f:
+        for result in results:
+            f.write(str(result) + "\n")
+
+
 def read_file(file_path: str) -> str:
     """
     Function to read a file and return the first line
-
     :Input:
         file_path: the filepath we want to read the first line of
     :Output:
@@ -88,6 +93,7 @@ def ukkonen_suffix_tree(txt: str) -> Node:
 
         # Reset pending in each phase
         pending = None
+        skipped_edge_length = 0
 
         # Go through each remaining extension (Either rule 2 or 3)
         j = last_j + 1      # Start from next j
@@ -98,7 +104,7 @@ def ukkonen_suffix_tree(txt: str) -> Node:
             # If no edge going out of active_node that matches active_edge
             if active_node.children[active_edge] is None:
                 # Rule 2 Alternate: Hang new leaf on existing node
-                active_node.children[active_edge] = Node(phase, None, phase)
+                active_node.children[active_edge] = Node(phase, None, j)
 
                 # Update last_j
                 last_j = j
@@ -116,7 +122,8 @@ def ukkonen_suffix_tree(txt: str) -> Node:
                 if remainder > next_node.get_edge_length():
                     # Walk down
                     # Set active_edge as the next character in the path after skip/count trick
-                    active_edge = ord(txt[next_node.start + next_node.get_edge_length()])
+                    skipped_edge_length += next_node.get_edge_length()
+                    active_edge = ord(txt[j + skipped_edge_length])
 
                     # Update remainder
                     remainder -= next_node.get_edge_length()
@@ -185,6 +192,7 @@ def ukkonen_suffix_tree(txt: str) -> Node:
 
             # Increment j
             j += 1
+            skipped_edge_length = 0
 
     return root
 
@@ -215,4 +223,4 @@ if __name__ == '__main__':
 
     root = ukkonen_suffix_tree(string)
 
-    print(get_suffix_array(root))
+    write_file("output_sa.txt", get_suffix_array(root))
